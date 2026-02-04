@@ -1,0 +1,82 @@
+package com.example.addressexport.util;
+
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+
+@Slf4j
+public class LoginUtil {
+    private static final Set<String> TOKENS = new LinkedHashSet<>();
+
+    public static Set<String> getTokens() {
+        return TOKENS;
+    }
+
+    public static void writeToken(String token) {
+        TOKENS.add(token);
+    }
+
+    public static void cleanToken() {
+        TOKENS.clear();
+    }
+
+    public static boolean checkToken(String token) {
+        String res = null;
+        for (int i = 0; i < 5; i++) {
+            if ((res = getBaseInfo(token)) != null) break;
+        }
+        if (res == null) return false;
+        if (new JSONObject(res).getInt("code") != 200) {
+            System.out.println("token 无效, res=" + res);
+            return false;
+        }
+        return true;
+    }
+
+    private static String getBaseInfo(String token) {
+        try {
+            String urlString = "https://api.superexchang.com/user/user/base";
+            String res = HttpRequest.get(urlString)
+                    .header("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36")
+                    .header("token", token.split(":")[0])
+                    .execute().body();
+            if (StrUtil.isBlank(res)) {
+                return null;
+            }
+            return res;
+        } catch (Exception e) {
+            log.info("req token exception, token={}", token, e);
+            return null;
+        }
+    }
+
+    public static List<String> openRedP(String code) {
+        Set<String> tokens = getTokens();
+        return tokens.stream().map(token -> {
+            String r = HttpRequest
+                    .post("https://api.superexchang.com/wallet/v3/wallet/red/packet/receive")
+                    .header("Content-Type", "application/json")
+                    .header("Accept-Language", "zh-CN")
+                    .header("token", token.split(":")[0])
+                    .body("{\"code\": \"" + code + "\"}").execute().body();
+            try {
+                Thread.sleep((ThreadLocalRandom.current().nextInt(5) + 1) * 1000L);
+            } catch (InterruptedException ignored) {
+            }
+            JSONObject jsonObject = JSONUtil.parseObj(r);
+            if (jsonObject.getInt("code") != 200) {
+                return jsonObject.getStr("msg") + " ---> " + token;
+            } else {
+                return jsonObject.getStr("data") + " ---> " + token;
+            }
+        }).collect(Collectors.toList());
+    }
+}

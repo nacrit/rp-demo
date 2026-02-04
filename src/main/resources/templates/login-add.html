@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>t</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .search-container {
+            margin-top: 50px;
+        }
+
+        input[type="text"] {
+            width: 60%;
+            height: 30px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        button[type="submit"] {
+            width: 20%;
+            height: 35px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #3e8e41;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        table tr th,
+        table tr td {
+            border: solid 1px #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table tr th {
+            background-color: #eee;
+        }
+
+        .copy-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .copy-button:hover {
+            background-color: #3e8e41;
+        }
+
+        .copy-status {
+            margin-top: 5px;
+            color: green;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="search-container">
+        <form action="/login/add" method="post">
+            <input name="token" type="text" placeholder="请输入token" th:value="${token}">
+            <button type="submit">添加Token</button>
+        </form>
+    </div>
+    <div class="search-container">
+        <form action="/login/red-p" method="post">
+            <input name="code" type="text" placeholder="code" th:value="${code}">
+            <button type="submit">open</button>
+        </form>
+    </div>
+
+    <p th:text="${result}"></p>
+    <button id="clearButton">清除Token</button>
+
+    <table>
+        <thead>
+        <tr>
+            <th>备注</th>
+            <th>Token</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${results}">
+            <td th:text="${r.split(':')[1]}"></td>
+            <td class="token-cell" th:text="${r.split(':')[0]}"></td>
+            <td>
+                <button class="copy-button">复制</button>
+                <p class="copy-status"></p>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取所有的复制按钮
+        const copyButtons = document.querySelectorAll('.copy-button');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                // 使用 event.target 代替 this
+                const tokenCell = event.target.closest('tr').querySelector('.token-cell');
+                const tokenText = tokenCell.textContent;
+
+                try {
+                    navigator.clipboard.writeText(tokenText).then(function() {
+                        const statusElement = event.target.closest('tr').querySelector('.copy-status');
+                        statusElement.textContent = "文本已复制到剪贴板！";
+                        setTimeout(() => {
+                            statusElement.textContent = '';
+                        }, 3000);
+                    }).catch(err => {
+                        console.error('无法复制文本:', err);
+                    });
+                } catch (err) {
+                    console.error('浏览器不支持此功能:', err);
+                }
+            });
+        });
+    });
+    document.getElementById('clearButton').addEventListener('click', function(event) {
+        event.preventDefault(); // 阻止默认行为
+
+        fetch('/login/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: ''
+        })
+            .then(response => {
+                if (response.ok) {
+                    // 成功后刷新页面或更新DOM以清除显示的结果
+                    location.reload();
+                } else {
+                    console.error('清除失败');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+</body>
+</html>
