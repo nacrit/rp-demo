@@ -75,6 +75,7 @@ public class LoginController {
         model.addAttribute("results", LoginUtil.getTokens());
         model.addAttribute("result", "结果：success");
         model.addAttribute("code", "");
+        log.info("clear ..");
         LoginUtil.cleanToken();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
         return "/login-add";
@@ -85,6 +86,7 @@ public class LoginController {
         model.addAttribute("results", LoginUtil.getTokens());
         model.addAttribute("result", "结果：success");
         model.addAttribute("code", "");
+        log.info("save ..");
         LoginUtil.save();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
         return "/login-add";
@@ -95,6 +97,7 @@ public class LoginController {
         model.addAttribute("results", LoginUtil.getTokens());
         model.addAttribute("result", "结果：success");
         model.addAttribute("code", "");
+        log.info("load ..");
         LoginUtil.load();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
         return "/login-add";

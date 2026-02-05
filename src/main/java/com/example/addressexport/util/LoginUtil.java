@@ -29,7 +29,6 @@ public class LoginUtil {
 
     public static void cleanToken() {
         TOKENS.clear();
-        log.info("clean all tokens");
     }
 
     public static void cleanExpireToken() {
