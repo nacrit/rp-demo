@@ -3,7 +3,7 @@ services:
     container_name: rp-demo
     image: rp-demo:latest
     volumes:
-      - /opt/rp-demo/log:/opt/rp-demo/log
+      - /opt/address-export/rp-demo/log:/opt/address-export/rp-demo/log
     restart: unless-stopped
     ports:
       - "8888:8888"

@@ -1,12 +1,12 @@
 package com.example.addressexport.util;
 
+import cn.hutool.core.collection.ConcurrentHashSet;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class LoginUtil {
-    private static final Set<String> TOKENS = new LinkedHashSet<>();
+    private static final Set<String> TOKENS = new ConcurrentHashSet<>();
 
     public static Set<String> getTokens() {
         return TOKENS;
@@ -26,19 +26,32 @@ public class LoginUtil {
 
     public static void cleanToken() {
         TOKENS.clear();
+        log.info("clean all tokens");
     }
 
-    public static boolean checkToken(String token) {
-        String res = null;
-        for (int i = 0; i < 5; i++) {
-            if ((res = getBaseInfo(token)) != null) break;
+    public static void cleanExpireToken() {
+        TOKENS.removeIf(LoginUtil::checkInvalidToken);
+    }
+
+    public static boolean checkInvalidToken(String token) {
+        if (StrUtil.isBlank(token)) {
+            return true;
         }
-        if (res == null) return false;
-        if (new JSONObject(res).getInt("code") != 200) {
-            System.out.println("token 无效, res=" + res);
+        try {
+            String res = null;
+            for (int i = 0; i < 5; i++) {
+                if ((res = getBaseInfo(token)) != null) break;
+            }
+            if (res == null) return true;
+            if (new JSONObject(res).getInt("code") != 200) {
+                log.info("token 无效, res={}", res);
+                return true;
+            }
+        } catch (Exception e) {
+            log.info("check token exception", e);
             return false;
         }
-        return true;
+        return false;
     }
 
     private static String getBaseInfo(String token) {
@@ -60,7 +73,7 @@ public class LoginUtil {
 
     public static List<String> openRedP(String code) {
         Set<String> tokens = getTokens();
-        return tokens.stream().map(token -> {
+        return tokens.stream().parallel().map(token -> {
             String r = HttpRequest
                     .post("https://api.superexchang.com/wallet/v3/wallet/red/packet/receive")
                     .header("Content-Type", "application/json")
@@ -68,11 +81,12 @@ public class LoginUtil {
                     .header("token", token.split(":")[0])
                     .body("{\"code\": \"" + code + "\"}").execute().body();
             try {
-                Thread.sleep((ThreadLocalRandom.current().nextInt(5) + 1) * 1000L);
+                Thread.sleep((ThreadLocalRandom.current().nextInt(200) + 1));
             } catch (InterruptedException ignored) {
             }
             JSONObject jsonObject = JSONUtil.parseObj(r);
             if (jsonObject.getInt("code") != 200) {
+                log.info("open rp fail, token={}", token);
                 return jsonObject.getStr("msg") + " ---> " + token;
             } else {
                 return jsonObject.getStr("data") + " ---> " + token;

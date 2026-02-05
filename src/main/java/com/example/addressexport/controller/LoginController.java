@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,7 +22,31 @@ public class LoginController {
         Set<String> results = LoginUtil.getTokens();
         model.addAttribute("token", token);
         model.addAttribute("results", results);
-        model.addAttribute("code", "88888888");
+        model.addAttribute("code", "1111");
+        if (token.contains(StrUtil.COMMA)) {
+            String[] tokenArr = token.split(StrUtil.COMMA);
+            Arrays.stream(tokenArr).parallel()
+                    .forEach(t -> {
+                        if (StrUtil.isBlank(t) || t.length() < 20) {
+                            return;
+                        } else if (t.split(StrUtil.COLON).length < 2) {
+                            log.info("t长度不对 t={}", t);
+                            return;
+                        } else if (results.stream().map(e -> e.split(":")[0])
+                                .collect(Collectors.toList()).contains(t.split(":")[0])) {
+                            log.info("t重复添加 t={}", t);
+                            return;
+                        } else if (LoginUtil.checkInvalidToken(t)) {
+                            log.info("t失效 t={}", t);
+                            return;
+                        }
+                        LoginUtil.writeToken(t);
+                        log.info("[添加t] t={}", t);
+                    });
+            model.addAttribute("result", "结果：操作成功");
+            return "login-add";
+        }
+
         String result = null;
         if (StrUtil.isBlank(token) || token.length() < 20) {
             result = "结果：token不能为空";
@@ -30,16 +55,16 @@ public class LoginController {
         } else if (results.stream().map(e -> e.split(":")[0])
                 .collect(Collectors.toList()).contains(token.split(":")[0])) {
             result = "结果：token已存在";
-        } else if (!LoginUtil.checkToken(token)) {
+        } else if (LoginUtil.checkInvalidToken(token)) {
             result = "结果：token 无效";
         }
         if (result != null) {
             model.addAttribute("result", result);
             return "login-add";
         }
+        LoginUtil.writeToken(token);
         log.info("[添加token] token={}", token);
         results.add(token);
-        LoginUtil.writeToken(token);
         model.addAttribute("result", "结果：操作成功");
         return "login-add"; // 返回的视图名称
     }
@@ -62,7 +87,7 @@ public class LoginController {
         model.addAttribute("token", token);
         model.addAttribute("results", results);
         model.addAttribute("result", "结果：操作成功");
-        model.addAttribute("code", "88888888");
+        model.addAttribute("code", "1111");
         return "login-add"; // 返回的视图名称
     }
 

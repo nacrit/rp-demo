@@ -1,99 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>t</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            text-align: center;
+        :root {
+            --pri: #85aae8;
+            --btn: #5c54e5;
+            --suc: #10b981;
+            --dan: #ef4444;
+            --bg: #f9fafb;
+            --txt: #1f2937;
+            --bor: #d1d5db;
         }
 
-        .search-container {
-            margin-top: 50px;
+        body {
+            margin: 0;
+            padding: 16px;
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--pri);
+            margin: 0 0 1rem;
+        }
+
+        .stats {
+            text-align: center;
+            margin: 0.8rem 0 1.2rem;
+            color: #4b5563;
+        }
+
+        .stats strong { color: var(--pri); }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
 
         input[type="text"] {
-            width: 60%;
-            height: 30px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-            border-radius: 5px;
+            flex: 1;
+            min-width: 0;
+            padding: 10px 12px;
+            font-size: 15px;
+            border: 1px solid var(--bor);
+            border-radius: 6px;
         }
 
-        button[type="submit"] {
-            width: 20%;
-            height: 35px;
-            background-color: #4CAF50;
+        input:focus {
+            outline: none;
+            border-color: var(--pri);
+            box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 15px;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
+            white-space: nowrap;
         }
 
-        button[type="submit"]:hover {
-            background-color: #3e8e41;
+        button[type="submit"] { background: var(--btn); }
+
+        #clearButton {
+            margin: 1.2rem auto;
+            background: var(--dan);
+            display: block;
+        }
+
+        .result {
+            text-align: center;
+            margin: 0.8rem 0;
+            color: var(--suc);
+            min-height: 1.2em;
         }
 
         table {
-            border-collapse: collapse;
             width: 100%;
-            margin-top: 20px;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
         }
 
-        table tr th,
-        table tr td {
-            border: solid 1px #ccc;
-            padding: 8px;
+        th, td {
+            padding: 10px 12px;
             text-align: left;
+            border-bottom: 1px solid var(--bor);
         }
 
-        table tr th {
-            background-color: #eee;
+        th {
+            background: var(--pri);
+            color: white;
+            font-weight: 600;
         }
+
+        .token-cell {
+            font-family: monospace;
+            word-break: break-all;
+            font-size: 13.5px;
+            line-height: 1.4;
+        }
+
+        .copy-cell { text-align: center; width: 100px; }
 
         .copy-button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-
-        .copy-button:hover {
-            background-color: #3e8e41;
+            padding: 6px 14px;
+            background: var(--suc);
+            font-size: 13px;
         }
 
         .copy-status {
-            margin-top: 5px;
-            color: green;
-            font-size: 0.9em;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--suc);
+            min-height: 1.2em;
+        }
+
+        @media (max-width: 560px) {
+            .form-row { flex-direction: column; gap: 8px; }
+            button { width: 100%; padding: 12px; }
+            .copy-cell { width: auto; }
+            th, td { padding: 8px 10px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <div class="search-container">
+    <div class="stats">总数：<strong id="count">0</strong></div>
+
+    <div class="form-row">
         <form action="/login/add" method="post">
-            <input name="token" type="text" placeholder="请输入token" th:value="${token}">
-            <button type="submit">添加Token</button>
-        </form>
-    </div>
-    <div class="search-container">
-        <form action="/login/red-p" method="post">
-            <input name="code" type="text" placeholder="code" th:value="${code}">
-            <button type="submit">open</button>
+            <input name="token" placeholder="token" th:value="${token}">
+            <button type="submit">添加</button>
         </form>
     </div>
 
-    <p th:text="${result}"></p>
-    <button id="clearButton">清除Token</button>
+    <div class="form-row">
+        <form action="/login/red-p" method="post">
+            <input name="code" placeholder="code" th:value="${code}">
+            <button type="submit">Open</button>
+        </form>
+    </div>
+
+    <div class="result" th:text="${result}"></div>
+
+    <button id="clearButton">清除全部</button>
 
     <table>
         <thead>
@@ -103,13 +170,13 @@
             <th>操作</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="tbody">
         <tr th:each="r : ${results}">
             <td th:text="${r.split(':')[1]}"></td>
             <td class="token-cell" th:text="${r.split(':')[0]}"></td>
-            <td>
+            <td class="copy-cell">
                 <button class="copy-button">复制</button>
-                <p class="copy-status"></p>
+                <div class="copy-status"></div>
             </td>
         </tr>
         </tbody>
@@ -117,52 +184,38 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 获取所有的复制按钮
-        const copyButtons = document.querySelectorAll('.copy-button');
-        copyButtons.forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
+    function updateCount() {
+        document.getElementById('count').textContent =
+            document.querySelectorAll('#tbody tr').length;
+    }
 
-                // 使用 event.target 代替 this
-                const tokenCell = event.target.closest('tr').querySelector('.token-cell');
-                const tokenText = tokenCell.textContent;
+    document.addEventListener('DOMContentLoaded', () => {
+        updateCount();
 
-                try {
-                    navigator.clipboard.writeText(tokenText).then(function() {
-                        const statusElement = event.target.closest('tr').querySelector('.copy-status');
-                        statusElement.textContent = "文本已复制到剪贴板！";
-                        setTimeout(() => {
-                            statusElement.textContent = '';
-                        }, 3000);
-                    }).catch(err => {
-                        console.error('无法复制文本:', err);
-                    });
-                } catch (err) {
-                    console.error('浏览器不支持此功能:', err);
-                }
-            });
+        document.querySelectorAll('.copy-button').forEach(btn => {
+            btn.onclick = e => {
+                e.preventDefault();
+                const row = btn.closest('tr');
+                const token = row.cells[1].textContent.trim();
+                const status = row.querySelector('.copy-status');
+
+                navigator.clipboard.writeText(token).then(() => {
+                    status.textContent = '已复制';
+                    setTimeout(() => status.textContent = '', 1800);
+                }).catch(() => {
+                    status.textContent = '失败';
+                    setTimeout(() => status.textContent = '', 1800);
+                });
+            };
         });
-    });
-    document.getElementById('clearButton').addEventListener('click', function(event) {
-        event.preventDefault(); // 阻止默认行为
 
-        fetch('/login/clear', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: ''
-        })
-            .then(response => {
-                if (response.ok) {
-                    // 成功后刷新页面或更新DOM以清除显示的结果
-                    location.reload();
-                } else {
-                    console.error('清除失败');
-                }
-            })
-            .catch(error => console.error('Error:', error));
+        document.getElementById('clearButton').onclick = e => {
+            e.preventDefault();
+            if (!confirm('确定清除所有？')) return;
+            fetch('/login/clear', { method: 'POST', body: '' })
+                .then(r => r.ok ? location.reload() : alert('失败'))
+                .catch(() => alert('请求错误'));
+        };
     });
 </script>
 </body>
