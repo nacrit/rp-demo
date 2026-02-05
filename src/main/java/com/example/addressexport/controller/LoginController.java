@@ -78,7 +78,7 @@ public class LoginController {
         log.info("clear ..");
         LoginUtil.cleanToken();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
-        return "/login-add";
+        return "login-add";
     }
 
     @PostMapping("/login/save")
@@ -89,7 +89,7 @@ public class LoginController {
         log.info("save ..");
         LoginUtil.save();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
-        return "/login-add";
+        return "login-add";
     }
 
     @PostMapping("/login/load")
@@ -100,7 +100,7 @@ public class LoginController {
         log.info("load ..");
         LoginUtil.load();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
-        return "/login-add";
+        return "login-add";
     }
 
     @GetMapping("/login/add")
