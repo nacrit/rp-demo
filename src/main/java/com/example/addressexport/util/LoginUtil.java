@@ -1,19 +1,22 @@
 package com.example.addressexport.util;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ConcurrentHashSet;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class LoginUtil {
+    private static final String path = "/opt/address-export/rp-demo/log/tokens.txt";
     private static final Set<String> TOKENS = new ConcurrentHashSet<>();
 
     public static Set<String> getTokens() {
@@ -92,5 +95,33 @@ public class LoginUtil {
                 return jsonObject.getStr("data") + " ---> " + token;
             }
         }).collect(Collectors.toList());
+    }
+
+
+    public static Set<String> loadTokens() {
+        String absolutePath = FileUtil.getAbsolutePath(path);
+        File file = new File(absolutePath);
+        if (!file.exists()) {
+            return Collections.emptySet();
+        }
+        return new ConcurrentHashSet<>(FileUtil.readLines(file, "UTF-8"));
+    }
+
+    public static void save() {
+        if (CollUtil.isEmpty(TOKENS)) {
+            return;
+        }
+        FileUtil.del(path);
+        FileUtil.writeLines(TOKENS, path, "UTF-8", true);
+    }
+
+    public static void load() {
+        Set<String> tokens = loadTokens();
+        tokens.removeIf(e -> checkInvalidToken(e)
+                || TOKENS.stream().anyMatch(t -> t.split(":")[0].equals(e.split(":")[0])));
+        if (CollUtil.isNotEmpty(tokens)) {
+            TOKENS.addAll(tokens);
+        }
+
     }
 }

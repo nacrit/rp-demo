@@ -9,7 +9,7 @@
             --pri: #85aae8;
             --btn: #5c54e5;
             --suc: #10b981;
-            --dan: #ef4444;
+            --dan: #ef6344;
             --bg: #f9fafb;
             --txt: #1f2937;
             --bor: #d1d5db;
@@ -75,8 +75,9 @@
 
         button[type="submit"] { background: var(--btn); }
 
-        #clearButton {
-            margin: 1.2rem auto;
+        .btn {
+            float: left;
+            margin: 1.2rem 1rem;
             background: var(--dan);
             display: block;
         }
@@ -160,7 +161,9 @@
 
     <div class="result" th:text="${result}"></div>
 
-    <button id="clearButton">清除全部</button>
+    <button id="clearButton" class="btn">Clear</button>
+    <button id="saveButton" class="btn">Save</button>
+    <button id="loadButton" class="btn">Load</button>
 
     <table>
         <thead>
@@ -211,8 +214,24 @@
 
         document.getElementById('clearButton').onclick = e => {
             e.preventDefault();
-            if (!confirm('确定清除所有？')) return;
+            if (!confirm('clear？')) return;
             fetch('/login/clear', { method: 'POST', body: '' })
+                .then(r => r.ok ? location.reload() : alert('失败'))
+                .catch(() => alert('请求错误'));
+        };
+
+        document.getElementById('saveButton').onclick = e => {
+            e.preventDefault();
+            if (!confirm('save？')) return;
+            fetch('/login/save', { method: 'POST', body: '' })
+                .then(r => r.ok ? location.reload() : alert('失败'))
+                .catch(() => alert('请求错误'));
+        };
+
+        document.getElementById('loadButton').onclick = e => {
+            e.preventDefault();
+            if (!confirm('load？')) return;
+            fetch('/login/load', { method: 'POST', body: '' })
                 .then(r => r.ok ? location.reload() : alert('失败'))
                 .catch(() => alert('请求错误'));
         };

@@ -22,7 +22,7 @@ public class LoginController {
         Set<String> results = LoginUtil.getTokens();
         model.addAttribute("token", token);
         model.addAttribute("results", results);
-        model.addAttribute("code", "1111");
+        model.addAttribute("code", "");
         if (token.contains(StrUtil.COMMA)) {
             String[] tokenArr = token.split(StrUtil.COMMA);
             Arrays.stream(tokenArr).parallel()
@@ -71,15 +71,34 @@ public class LoginController {
 
 
     @PostMapping("/login/clear")
-    public String handleTokenSearch(Model model) {
+    public String clear(Model model) {
         model.addAttribute("results", LoginUtil.getTokens());
-        model.addAttribute("result", "结果：清除成功");
-        model.addAttribute("code", "88888888");
+        model.addAttribute("result", "结果：success");
+        model.addAttribute("code", "");
         LoginUtil.cleanToken();
         // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
         return "/login-add";
     }
 
+    @PostMapping("/login/save")
+    public String save(Model model) {
+        model.addAttribute("results", LoginUtil.getTokens());
+        model.addAttribute("result", "结果：success");
+        model.addAttribute("code", "");
+        LoginUtil.save();
+        // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
+        return "/login-add";
+    }
+
+    @PostMapping("/login/load")
+    public String load(Model model) {
+        model.addAttribute("results", LoginUtil.getTokens());
+        model.addAttribute("result", "结果：success");
+        model.addAttribute("code", "");
+        LoginUtil.load();
+        // 重定向到显示搜索页面的方法，或者返回相同的视图以刷新页面
+        return "/login-add";
+    }
 
     @GetMapping("/login/add")
     public String loginAdd(@RequestParam(required = false) String token, Model model) {
@@ -87,7 +106,7 @@ public class LoginController {
         model.addAttribute("token", token);
         model.addAttribute("results", results);
         model.addAttribute("result", "结果：操作成功");
-        model.addAttribute("code", "1111");
+        model.addAttribute("code", "");
         return "login-add"; // 返回的视图名称
     }
 
